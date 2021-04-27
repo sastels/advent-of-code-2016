@@ -9,7 +9,11 @@ import (
 )
 
 type point struct {
-	x, y      int
+	x, y int
+}
+
+type walker struct {
+	loc       point
 	direction string
 }
 
@@ -20,29 +24,33 @@ func Abs(x int) int {
 	return x
 }
 
-func (loc *point) Move(command string) {
+func (p *point) Dist() int {
+	return Abs(p.x) + Abs(p.y)
+}
+
+func (w *walker) Move(command string) {
 	var dir = command[0:1]
 	if dir == "R" {
-		switch loc.direction {
+		switch w.direction {
 		case "N":
-			loc.direction = "E"
+			w.direction = "E"
 		case "E":
-			loc.direction = "S"
+			w.direction = "S"
 		case "S":
-			loc.direction = "W"
+			w.direction = "W"
 		case "W":
-			loc.direction = "N"
+			w.direction = "N"
 		}
 	} else if dir == "L" {
-		switch loc.direction {
+		switch w.direction {
 		case "N":
-			loc.direction = "W"
+			w.direction = "W"
 		case "W":
-			loc.direction = "S"
+			w.direction = "S"
 		case "S":
-			loc.direction = "E"
+			w.direction = "E"
 		case "E":
-			loc.direction = "N"
+			w.direction = "N"
 		}
 	} else {
 		fmt.Printf("bad direction %s!!\n", dir)
@@ -50,30 +58,39 @@ func (loc *point) Move(command string) {
 
 	distance, error := strconv.Atoi(command[1:])
 	if error == nil {
-		switch loc.direction {
+		switch w.direction {
 		case "N":
-			loc.y += distance
+			w.loc.y += distance
 		case "E":
-			loc.x += distance
+			w.loc.x += distance
 		case "S":
-			loc.y -= distance
+			w.loc.y -= distance
 		case "W":
-			loc.x -= distance
+			w.loc.x -= distance
 		}
 	}
 }
 
-func Step1(input string) int {
-	loc := point{0, 0, "N"}
-	for _, cmd := range strings.Split(input, ", ") {
-		loc.Move(cmd)
+func Part1(input string) int {
+	w := walker{point{0, 0}, "N"}
+	for _, cmd := range strings.Split(strings.TrimRight(input, "\r\n"), ", ") {
+		w.Move(cmd)
 	}
-	return Abs(loc.x) + Abs(loc.y)
+	return w.loc.Dist()
 }
 
-func Step2(input string) int {
-
-	return 0
+func Part2(input string) int {
+	previous := make(map[point]bool)
+	w := walker{point{0, 0}, "N"}
+	previous[w.loc] = true
+	for _, cmd := range strings.Split(strings.TrimRight(input, "\r\n"), ", ") {
+		w.Move(cmd)
+		if previous[w.loc] {
+			return w.loc.Dist()
+		}
+		previous[w.loc] = true
+	}
+	return -1
 }
 
 func main() {
@@ -83,5 +100,6 @@ func main() {
 	}
 	text := string(content)
 
-	fmt.Printf("Step1: %d\n", Step1(text))
+	fmt.Printf("Part1: %d\n", Part1(text))
+	fmt.Printf("Part2: %d\n", Part2(text))
 }
