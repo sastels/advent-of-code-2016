@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"strconv"
+	"strings"
 )
 
 type point struct {
@@ -10,7 +13,14 @@ type point struct {
 	direction string
 }
 
-func (loc *point) Step(command string) {
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func (loc *point) Move(command string) {
 	var dir = command[0:1]
 	if dir == "R" {
 		switch loc.direction {
@@ -53,11 +63,25 @@ func (loc *point) Step(command string) {
 	}
 }
 
+func Step1(input string) int {
+	loc := point{0, 0, "N"}
+	for _, cmd := range strings.Split(input, ", ") {
+		loc.Move(cmd)
+	}
+	return Abs(loc.x) + Abs(loc.y)
+}
+
+func Step2(input string) int {
+
+	return 0
+}
+
 func main() {
-	var location = point{0, 0, "N"}
-	fmt.Printf("%v\n", location)
+	content, err := ioutil.ReadFile("data/step1.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	text := string(content)
 
-	location.Step("L4")
-
-	fmt.Printf("%v\n", location)
+	fmt.Printf("Step1: %d\n", Step1(text))
 }
