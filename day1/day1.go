@@ -26,8 +26,8 @@ func Abs(x int) int {
 
 func Step(dir string) point {
 	s := map[string]point{
-		"N": {1, 0},
-		"E": {0, 1},
+		"N": {0, 1},
+		"E": {1, 0},
 		"S": {0, -1},
 		"W": {-1, 0},
 	}
@@ -63,15 +63,28 @@ func (w *walker) Move(command string) {
 	distance, _ := strconv.Atoi(command[1:])
 	w.direction = Turn(w.direction, dir)
 	step := Step(w.direction)
-	// fmt.Printf("w: %v  cmd: <%s %d>  step: %v\n", w, dir, distance, step)
 	for i := 0; i < distance; i++ {
 		w.loc.x += step.x
 		w.loc.y += step.y
 	}
 }
 
-func (w *walker) desc() {
-	fmt.Printf("%v\n", w)
+func (w *walker) Move2(prev map[point]bool, command string) int {
+	var dir = command[0:1]
+	distance, _ := strconv.Atoi(command[1:])
+	w.direction = Turn(w.direction, dir)
+	step := Step(w.direction)
+
+	for i := 0; i < distance; i++ {
+		w.loc.x += step.x
+		w.loc.y += step.y
+		if prev[w.loc] {
+			return w.loc.Dist()
+		} else {
+			prev[w.loc] = true
+		}
+	}
+	return -1
 }
 
 func Part1(input string) int {
@@ -85,16 +98,12 @@ func Part1(input string) int {
 func Part2(input string) int {
 	previous := make(map[point]bool)
 	w := walker{point{0, 0}, "N"}
-	// fmt.Printf("%v dist %d\n", w, w.loc.Dist())
 	previous[w.loc] = true
 	for _, cmd := range strings.Split(strings.TrimRight(input, "\r\n"), ", ") {
-		w.Move(cmd)
-		// fmt.Printf("%v dist %d after %s\n", w, w.loc.Dist(), cmd)
-
-		if previous[w.loc] {
-			return w.loc.Dist()
+		retval := w.Move2(previous, cmd)
+		if retval >= 0 {
+			return retval
 		}
-		previous[w.loc] = true
 	}
 	return -1
 }
